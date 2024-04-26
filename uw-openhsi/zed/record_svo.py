@@ -24,9 +24,14 @@ import sys
 import pyzed.sl as sl
 from signal import signal, SIGINT
 import argparse 
-import os 
+import os
+import numpy as np
+
+
+
 
 cam = sl.Camera()
+
 
 #Handler to deal with CTRL+C properly
 def handler(signal_received, frame):
@@ -37,16 +42,20 @@ def handler(signal_received, frame):
 signal(SIGINT, handler)
 
 def main():
-    
+    # Camera initialization parameters
     init = sl.InitParameters()
     init.depth_mode = sl.DEPTH_MODE.NONE # Set configuration parameters for the ZED
+    init.camera_fps = 30 
 
     status = cam.open(init) 
     if status != sl.ERROR_CODE.SUCCESS: 
         print("Camera Open", status, "Exit program.")
         exit(1)
-        
+    
+    # Recording specific parameters
     recording_param = sl.RecordingParameters(opt.output_svo_file, sl.SVO_COMPRESSION_MODE.LOSSLESS) # Enable recording with the filename specified in argument
+    # A Must for ORIN as it cannot do the hardware encoding.
+    
     err = cam.enable_recording(recording_param)
     if err != sl.ERROR_CODE.SUCCESS:
         print("Recording ZED : ", err)
@@ -66,6 +75,6 @@ if __name__ == "__main__":
     parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required= True)
     opt = parser.parse_args()
     if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
-        print("--output_svo_file parameter should be a .svo file but is not : ",opt.output_svo_file,"Exit program.")
+        print("--output_svo_file parameter should be a .svo file but is not : ", opt.output_svo_file,"Exit program.")
         exit()
     main()
