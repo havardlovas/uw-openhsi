@@ -120,7 +120,8 @@ def main():
         pymesh.apply_texture(sl.MESH_TEXTURE_FORMAT.RGBA)
 
     # Save mesh as an obj file
-    filepath = "mesh_gen.obj"
+    
+    filepath = opt.output_mesh_file
     status = pymesh.save(filepath)
     if status:
         print("Mesh saved under " + filepath)
@@ -190,6 +191,7 @@ def parse_args(init):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_svo_file', type=str, help='Path to an .svo file, if you want to replay it',default = 'test_svo.svo2')
+    parser.add_argument('--output_mesh_file', type=str, help='Path to an .obj file',default = "mesh_gen.obj")
     parser.add_argument('--ip_address', type=str, help='IP Adress, in format a.b.c.d:port or a.b.c.d, if you have a streaming setup', default = '')
     parser.add_argument('--resolution', type=str, help='Resolution, can be either HD2K, HD1200, HD1080, HD720, SVGA or VGA', default = '')
     parser.add_argument('--build_mesh', help = 'Either the script should plot a mesh or point clouds of surroundings', action='store_true')

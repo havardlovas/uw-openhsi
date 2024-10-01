@@ -26,6 +26,7 @@ from signal import signal, SIGINT
 import argparse 
 import os
 import numpy as np
+import time
 
 
 
@@ -45,7 +46,7 @@ def main():
     # Camera initialization parameters
     init = sl.InitParameters()
     init.depth_mode = sl.DEPTH_MODE.NONE # Set configuration parameters for the ZED
-    init.camera_fps = 30 
+    init.camera_fps = opt.fps 
 
     status = cam.open(init) 
     if status != sl.ERROR_CODE.SUCCESS: 
@@ -64,8 +65,9 @@ def main():
     runtime = sl.RuntimeParameters()
     print("SVO is Recording, use Ctrl-C to stop.") # Start recording SVO, stop with Ctrl-C command
     frames_recorded = 0
+    time_max = opt.time_stop_zed
 
-    while True:
+    while time.time() < time_max:
         if cam.grab(runtime) == sl.ERROR_CODE.SUCCESS : # Check that a new image is successfully acquired
             frames_recorded += 1
             print("Frame count: " + str(frames_recorded), end="\r")
@@ -73,6 +75,8 @@ def main():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required= True)
+    parser.add_argument('--fps', type=int, help='Number of frames per second', required= True)
+    parser.add_argument('--time_stop_zed', type=float, help='When to stop recording in unix time [s]', required= False, default=time.time() + 1e6) # Record indefinetely
     opt = parser.parse_args()
     if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
         print("--output_svo_file parameter should be a .svo file but is not : ", opt.output_svo_file,"Exit program.")
