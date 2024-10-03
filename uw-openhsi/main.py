@@ -42,183 +42,179 @@ def record_svo(output_svo_file, command_record):
         print("Error occurred while calling record_svo.py:", e)
     
 
+if __name__ == '__main__':
+
+    # Tweakable parameters:
+    record_time_zed = 20 # This is how long the recording lasts for
+
+    fps_hsi = 8
 
 
-# Tweakable parameters:
-record_time_zed = 20 # This is how long the recording lasts for
-
-fps_hsi = 80
-
-
-## Alter the settings
-with open('configs/cam_settings_ids.json', 'r') as f:
-    data = json.load(f)
+    ## Alter the settings
+    with open('configs/cam_settings_ids.json', 'r') as f:
+        data = json.load(f)
 
 
-data['pixel_format'] = 'Mono12' # The fastest data to record is Mono8 (Up to 160 FPS)
-data['exposure_ms'] = 1e3/fps_hsi
-#data['exposure_ms'] = 1e3/(2*81.953778)
+    data['pixel_format'] = 'Mono12' # The fastest data to record is Mono8 (Up to 160 FPS)
+    data['exposure_ms'] = 1e3/fps_hsi
+    #data['exposure_ms'] = 1e3/(2*81.953778)
 
 
-with open('configs/cam_settings_ids.json', 'w') as f:
-    json.dump(data, f, indent=4)
+    with open('configs/cam_settings_ids.json', 'w') as f:
+        json.dump(data, f, indent=4)
 
-n_lines = 1000
-
-
-fps_stereo = 5
+    n_lines = 10
 
 
-# Register the timeout handler which causes an alarm to go off
-#signal.signal(signal.SIGALRM, timeout_handler)
-#signal.alarm(record_time) 
+    fps_stereo = 5
 
 
-
-# Path to func.py
-
-print(os.getcwd())
-func_path_record = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/record_svo.py"  # Adjust the path to your func.py
-func_path_pose_post = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/position_post.py"
-func_path_export = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/export_svo_images_or_vid.py" 
-func_mesh_post = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/mesh_post.py" 
-
-
-# The time the script starts
-time_start = time.time()
-
-time_stop_zed = time_start + record_time_zed
-
-
-print(time_stop_zed)
-current_time_utc = time.gmtime()
-current_time_utc_str = time.strftime("%Y-%m-%d_%H-%M-%S", current_time_utc)
+    # Register the timeout handler which causes an alarm to go off
+    #signal.signal(signal.SIGALRM, timeout_handler)
+    #signal.alarm(record_time) 
 
 
 
-# Define arguments for my_function (if needed)
+    # Path to func.py
 
-capture_path = os.path.join("captured_data", f"{current_time_utc_str}")
-
-if not os.path.exists(capture_path):
-    os.mkdir(capture_path)
-
-
-
-output_svo_file = os.path.join(capture_path, "recording.svo2")
-output_pose_file = os.path.join(capture_path, "pose.csv")
-output_path_dir = os.path.join(capture_path, "png_dir")
-if not os.path.exists(output_path_dir):
-    os.mkdir(output_path_dir)
+    print(os.getcwd())
+    func_path_record = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/record_svo.py"  # Adjust the path to your func.py
+    func_path_pose_post = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/position_post.py"
+    func_path_export = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/export_svo_images_or_vid.py" 
+    func_mesh_post = "/home/ubuntu/VSCodeProjects/uw-openhsi/uw-openhsi/zed/mesh_post.py" 
 
 
-output_dir_hsi = os.path.join(capture_path, "hsi_dir")
-if not os.path.exists(output_dir_hsi):
-    os.mkdir(output_dir_hsi)
+    # The time the script starts
+    time_start = time.time()
 
-output_mesh_file = os.path.join(capture_path,  "mesh_file.obj")
+    time_stop_zed = time_start + record_time_zed
+
+
+    print(time_stop_zed)
+    current_time_utc = time.gmtime()
+    current_time_utc_str = time.strftime("%Y-%m-%d_%H-%M-%S", current_time_utc)
 
 
 
-function_arguments = [output_svo_file]  # Adjust arguments as needed
+    # Define arguments for my_function (if needed)
+
+    capture_path = os.path.join("captured_data", f"{current_time_utc_str}")
+
+    if not os.path.exists(capture_path):
+        os.mkdir(capture_path)
 
 
-# Construct the command with the required argument
-command_record = ["python", func_path_record, "--output_svo_file", output_svo_file, "--fps", str(fps_stereo), "--time_stop_zed", str(time_stop_zed)]
 
-# Construct the command with the required argument
-command_export = ["python", func_path_export, "--input_svo_file", output_svo_file, "--output_path_dir", output_path_dir]
-
-# Construct the command with the required argument
-command_pose_post = ["python", func_path_pose_post, "--input_svo_file", output_svo_file, "--output_pose_file", output_pose_file]
-
-# Construct the command with the required argument
-command_mesh_post = ["python", func_mesh_post, "--input_svo_file", output_svo_file, "--output_mesh_file", output_mesh_file]
-
-# Which products to estimate
-process_dict = {'record': True,
-                'record_svo': False,
-                'record_hsi': True,
-                'pose_post': False,
-                'export': False,
-                'mesh_post': False}
+    output_svo_file = os.path.join(capture_path, "recording.svo2")
+    output_pose_file = os.path.join(capture_path, "pose.csv")
+    output_path_dir = os.path.join(capture_path, "png_dir")
+    if not os.path.exists(output_path_dir):
+        os.mkdir(output_path_dir)
 
 
-## Real time
-if process_dict["record"]:
-    if process_dict["record_hsi"]:
+    output_dir_hsi = os.path.join(capture_path, "hsi_dir")
+    if not os.path.exists(output_dir_hsi):
+        os.mkdir(output_dir_hsi)
 
-        try:
+    output_mesh_file = os.path.join(capture_path,  "mesh_file.obj")
+
+
+
+    function_arguments = [output_svo_file]  # Adjust arguments as needed
+
+
+    # Construct the command with the required argument
+    command_record = ["python", func_path_record, "--output_svo_file", output_svo_file, "--fps", str(fps_stereo), "--time_stop_zed", str(time_stop_zed)]
+
+    # Construct the command with the required argument
+    command_export = ["python", func_path_export, "--input_svo_file", output_svo_file, "--output_path_dir", output_path_dir]
+
+    # Construct the command with the required argument
+    command_pose_post = ["python", func_path_pose_post, "--input_svo_file", output_svo_file, "--output_pose_file", output_pose_file]
+
+    # Construct the command with the required argument
+    command_mesh_post = ["python", func_mesh_post, "--input_svo_file", output_svo_file, "--output_mesh_file", output_mesh_file]
+
+    # Which products to estimate
+    process_dict = {'record': True,
+                    'record_svo': False,
+                    'record_hsi': True,
+                    'pose_post': False,
+                    'export': False,
+                    'mesh_post': False}
+
+
+    ## Real time
+    if process_dict["record"]:
+        if process_dict["record_hsi"]:
             p1 = Process(target=record_hsi, kwargs = {"n_lines":n_lines, 'cube_save_dir':output_dir_hsi})
 
             p1.start()
 
             
             p1.join()
-        except:
-            record_hsi(n_lines=n_lines, cube_save_dir=output_dir_hsi)
 
-    if process_dict["record_svo"]:
-        p2 = Process(target=record_svo, kwargs = {"output_svo_file":output_svo_file, 'command_record':command_record})
+        if process_dict["record_svo"]:
+            p2 = Process(target=record_svo, kwargs = {"output_svo_file":output_svo_file, 'command_record':command_record})
 
-        p2.start()
+            p2.start()
 
-        # Wait for processes to finish (optional)
-        p2.join()
+            # Wait for processes to finish (optional)
+            p2.join()
 
 
 
-if process_dict["export"]:
-    try:
-        # Execute func.py with subprocess.run
-        result = subprocess.run(command_export, capture_output=True, text=True)
+    if process_dict["export"]:
+        try:
+            # Execute func.py with subprocess.run
+            result = subprocess.run(command_export, capture_output=True, text=True)
 
-        # Process the output if needed (optional)
-        if result.returncode == 0:
-            print("Pose estimation execution successful!")
-            print(result.stdout)  # Access standard output (optional)
-        else:
-            print("Pose estimateion execution failed.")
-            print(result.stderr)  # Access standard error (optional)
+            # Process the output if needed (optional)
+            if result.returncode == 0:
+                print("Pose estimation execution successful!")
+                print(result.stdout)  # Access standard output (optional)
+            else:
+                print("Pose estimateion execution failed.")
+                print(result.stderr)  # Access standard error (optional)
 
-    except subprocess.CalledProcessError as e:
-        print("Error occurred while calling position_post.py", e)
+        except subprocess.CalledProcessError as e:
+            print("Error occurred while calling position_post.py", e)
 
-if process_dict["pose_post"]:
-    print(f"######################### Pose estimation from SVO FILE {output_svo_file} #########################")
-    try:
-        # Execute func.py with subprocess.run
-        result = subprocess.run(command_pose_post, capture_output=True, text=True)
+    if process_dict["pose_post"]:
+        print(f"######################### Pose estimation from SVO FILE {output_svo_file} #########################")
+        try:
+            # Execute func.py with subprocess.run
+            result = subprocess.run(command_pose_post, capture_output=True, text=True)
 
-        # Process the output if needed (optional)
-        if result.returncode == 0:
-            print("Pose estimation execution successful!")
-            print(result.stdout)  # Access standard output (optional)
-        else:
-            print("Pose estimateion execution failed.")
-            print(result.stderr)  # Access standard error (optional)
+            # Process the output if needed (optional)
+            if result.returncode == 0:
+                print("Pose estimation execution successful!")
+                print(result.stdout)  # Access standard output (optional)
+            else:
+                print("Pose estimateion execution failed.")
+                print(result.stderr)  # Access standard error (optional)
 
-    except subprocess.CalledProcessError as e:
-        print("Error occurred while calling position_post.py", e)
+        except subprocess.CalledProcessError as e:
+            print("Error occurred while calling position_post.py", e)
 
 
 
 
 
-if process_dict["mesh_post"]:
-    try:
-        # Execute func.py with subprocess.run
-        result = subprocess.run(command_mesh_post, capture_output=True, text=True)
+    if process_dict["mesh_post"]:
+        try:
+            # Execute func.py with subprocess.run
+            result = subprocess.run(command_mesh_post, capture_output=True, text=True)
 
-        # Process the output if needed (optional)
-        if result.returncode == 0:
-            print("Mesh estimation execution successful!")
-            print(result.stdout)  # Access standard output (optional)
-        else:
-            print("Mesh estimation execution failed.")
-            print(result.stderr)  # Access standard error (optional)
+            # Process the output if needed (optional)
+            if result.returncode == 0:
+                print("Mesh estimation execution successful!")
+                print(result.stdout)  # Access standard output (optional)
+            else:
+                print("Mesh estimation execution failed.")
+                print(result.stderr)  # Access standard error (optional)
 
-    except subprocess.CalledProcessError as e:
-        print("Error occurred while calling position_post.py", e)
+        except subprocess.CalledProcessError as e:
+            print("Error occurred while calling position_post.py", e)
 
 
