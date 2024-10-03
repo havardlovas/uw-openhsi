@@ -49,11 +49,13 @@ record_time_zed = 20 # This is how long the recording lasts for
 
 fps_hsi = 80
 
+
+## Alter the settings
 with open('configs/cam_settings_ids.json', 'r') as f:
     data = json.load(f)
 
 
-data['pixel_format'] = 'Mono12' # The fastest data to record
+data['pixel_format'] = 'Mono12' # The fastest data to record is Mono8 (Up to 160 FPS)
 data['exposure_ms'] = 1e3/fps_hsi
 #data['exposure_ms'] = 1e3/(2*81.953778)
 
