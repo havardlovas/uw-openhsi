@@ -134,25 +134,35 @@ command_pose_post = ["python", func_path_pose_post, "--input_svo_file", output_s
 command_mesh_post = ["python", func_mesh_post, "--input_svo_file", output_svo_file, "--output_mesh_file", output_mesh_file]
 
 # Which products to estimate
-process_dict = {'record_svo': True,
+process_dict = {'record': True,
+                'record_svo': False,
+                'record_hsi': True,
                 'pose_post': False,
                 'export': False,
                 'mesh_post': False}
 
 
 ## Real time
-if process_dict["record_svo"]:
-    p1 = Process(target=record_hsi, kwargs = {"n_lines":n_lines, 'cube_save_dir':output_dir_hsi})
+if process_dict["record"]:
+    if process_dict["record_hsi"]:
 
-    p1.start()
+        try:
+            p1 = Process(target=record_hsi, kwargs = {"n_lines":n_lines, 'cube_save_dir':output_dir_hsi})
 
-    #p2 = Process(target=record_svo, kwargs = {"output_svo_file":output_svo_file, 'command_record':command_record})
+            p1.start()
 
-    #p2.start()
+            
+            p1.join()
+        except:
+            record_hsi(n_lines=n_lines, cube_save_dir=output_dir_hsi)
 
-    # Wait for processes to finish (optional)
-    p1.join()
-    #p2.join()
+    if process_dict["record_svo"]:
+        p2 = Process(target=record_svo, kwargs = {"output_svo_file":output_svo_file, 'command_record':command_record})
+
+        p2.start()
+
+        # Wait for processes to finish (optional)
+        p2.join()
 
 
 
