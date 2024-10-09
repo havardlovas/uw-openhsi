@@ -47,7 +47,7 @@ if __name__ == '__main__':
     # Tweakable parameters:
     record_time_zed = 20 # This is how long the recording lasts for
 
-    fps_hsi = 8
+    fps_hsi = 135
 
 
     ## Alter the settings
@@ -55,15 +55,26 @@ if __name__ == '__main__':
         data = json.load(f)
 
 
-    data['pixel_format'] = 'Mono12' # The fastest data to record is Mono8 (Up to 160 FPS)
+    data['pixel_format'] = 'Mono8' # The fastest data to record is Mono8 (Up to 160 FPS)
     data['exposure_ms'] = 1e3/fps_hsi
     #data['exposure_ms'] = 1e3/(2*81.953778)
+
+    row_start = 333
+    row_width = 550
+
+    #row_start = 0
+    #row_width = 1216
+
+    data['win_offset'] = [0, row_start]
+    data['win_resolution'] = [1936, row_width]
+
+    data['resolution'][0] = 552
 
 
     with open('configs/cam_settings_ids.json', 'w') as f:
         json.dump(data, f, indent=4)
 
-    n_lines = 10
+    n_lines = 500
 
 
     fps_stereo = 5
@@ -99,6 +110,7 @@ if __name__ == '__main__':
     # Define arguments for my_function (if needed)
 
     capture_path = os.path.join("captured_data", f"{current_time_utc_str}")
+    capture_path = os.path.join("captured_data", 'black_white_lines')
 
     if not os.path.exists(capture_path):
         os.mkdir(capture_path)
@@ -147,12 +159,13 @@ if __name__ == '__main__':
     ## Real time
     if process_dict["record"]:
         if process_dict["record_hsi"]:
-            p1 = Process(target=record_hsi, kwargs = {"n_lines":n_lines, 'cube_save_dir':output_dir_hsi})
+            """p1 = Process(target=record_hsi, kwargs = {"n_lines":n_lines, 'cube_save_dir':output_dir_hsi})
 
             p1.start()
 
             
-            p1.join()
+            p1.join()"""
+            record_hsi(n_lines, output_dir_hsi)
 
         if process_dict["record_svo"]:
             p2 = Process(target=record_svo, kwargs = {"output_svo_file":output_svo_file, 'command_record':command_record})
@@ -201,6 +214,23 @@ if __name__ == '__main__':
 
 
 
+    if process_dict["mesh_post"]:
+        try:
+            # Execute func.py with subprocess.run
+            result = subprocess.run(command_mesh_post, capture_output=True, text=True)
+
+            # Process the output if needed (optional)
+            if result.returncode == 0:
+                print("Mesh estimation execution successful!")
+                print(result.stdout)  # Access standard output (optional)
+            else:
+                print("Mesh estimation execution failed.")
+                print(result.stderr)  # Access standard error (optional)
+
+        except subprocess.CalledProcessError as e:
+            print("Error occurred while calling position_post.py", e)
+        
+    
     if process_dict["mesh_post"]:
         try:
             # Execute func.py with subprocess.run
